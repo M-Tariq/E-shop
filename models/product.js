@@ -1,72 +1,71 @@
 const mongoose = require("mongoose");
 
 const productSchema = mongoose.Schema({
-    name: {
-        type: String,
-        required: true,
+  name: {
+    type: String,
+    required: true,
+  },
+
+  description: {
+    type: String,
+    required: true,
+  },
+
+  richDescription: {
+    type: String,
+    required: true,
+  },
+
+  image: {
+    type: String,
+  },
+
+  images: [
+    {
+      type: String,
     },
-    
-    description: {
-        type: String,
-        required: true
-    },
+  ],
 
-    richDescription: {
-        type: String,
-        required: true
-    },
- 
-    image: {
-        type: String
-    },
+  brand: {
+    type: String,
+    default: "",
+  },
 
-    images: [{
-        type: String
-    }],
+  price: {
+    type: Number,
+  },
 
-    brand: {
-        type: String, 
-        default: ""
-    },
+  category: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Category",
+    required: true,
+  },
 
-    price: {
-        type: Number
-    },
+  isFeatured: {
+    type: Boolean,
+    default: false,
+  },
 
-    category: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "category",
-        required: true
-    },
+  countInStock: {
+    type: Number,
+    min: 0,
+    max: 255,
+  },
 
-    isFeatured: {
-        type: Boolean,
-        default: false
-    },
+  rating: {
+    type: Number,
+    default: 0,
+  },
 
+  numReviews: {
+    type: Number,
+    default: 0,
+  },
 
-    countInStock: {
-        type: Number,
-        min: 0,
-        max: 255
-    },
-
-    rating: {
-        type: Number,
-        default: 0
-    },
-
-
-    numReviews: {
-        type: Number,
-        default: 0
-    },
-
-    dateCreated: {
-        type: Date,
-        default: Date.now,
-    }
-
+  dateCreated: {
+    type: Date,
+    default: Date.now,
+  },
 });
 
 exports.Product = mongoose.model("Product", productSchema);
