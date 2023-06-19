@@ -1,4 +1,5 @@
 const { Product } = require('../models/product');
+const { Category } = require('../models/category');
 const express = require('express');
 const router = express.Router();
 
@@ -14,21 +15,41 @@ router.get(`/`, async (req, res) => {
   });
 })
 
-router.post(`/`, (req, res) => {
-  console.log(req)
-  const product = new Product({
+router.post(`/`, async(req, res) => {
+
+  const category = await Category.findById(req.body.category);
+  if(!category){
+    return res.status(400).json({
+      message: "Invalid category."
+    })
+  }
+  let product = new Product({
     name: req.body.name,
     image: req.body.image,
-    countInStock: req.body.countInStock
+    images: req.body.images,
+    countInStock: req.body.countInStock,
+    description: req.body.description,
+    richDescription: req.body.richDescription,
+    brand: req.body.brand,
+    price: req.body.price,
+    category: req.body.category,
+    isFeatured: req.body.isFeatured,
+    rating: req.body.rating,
+    numReviews: req.body.numReviews,
+    dateCreated: req.body.dateCreated,
   })
 
-  product.save().then((createdProduct => {
-    res.status(200).json(createdProduct)
-  })).catch((err) => {
-    res.status(500).json({
-      error: err,
-      success: false
-    })
+  product = await product.save();
+  if(!product)
+  return res.status(500).json({
+    message: "Something went wrong.",
+    success: false
+  })
+
+  return res.status(200).json({
+    product,
+    success: true,
+    message: "Product created successfuly."
   })
 })
 
