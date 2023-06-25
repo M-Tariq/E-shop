@@ -2,6 +2,7 @@ const express = require("express");
 const bcryptjs = require("bcryptjs");
 const { User } = require("../models/user");
 const { default: mongoose } = require("mongoose");
+const jsonwebtoken = require("jsonwebtoken");
 const router = express.Router();
 
 router.get(`/`, async (req, res) => {
@@ -17,6 +18,43 @@ router.get(`/`, async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({ success: false, error });
+  }
+});
+
+router.post(`/login`, async (req, res) => {
+  try {
+    const user = await User.findOne({email: req.body.email});
+    if(!user){
+      res.status(400).json({
+        success: false,
+        message: "User not found."
+      });
+    }
+
+    if(user && await bcryptjs.compareSync(req.body.password, user.passwordHash)){
+      const token = jsonwebtoken.sign({
+        userId: user.id
+      },
+      process.env.SECRET_KEY,
+      {expiresIn: '1d'});
+      res.status(200).json({
+        success: true,
+        message: "Logged In successfully.",
+        email: user.email,
+        token
+      });
+    }else{
+      res.status(400).json({
+        success: false,
+        message: "Password not matched.",
+      });
+    }
+ 
+  } catch (error) {
+    res.status(500).json({
+      error,
+      success: false,
+    });
   }
 });
 
@@ -45,23 +83,41 @@ router.put(`/:id`, async (req, res) => {
     const id = req.params.id;
     let user = null;
     if (mongoose.isValidObjectId(id)) {
-      user = await User.findByIdAndUpdate(req.params.id, req.body, {
-        new: true,
+      user = User.findById(id);
+      let newpassowrd;
+      if (req.body.password) {
+        newpassowrd = await bcryptjs.hashSync(req.body.password);
+      }else{
+        newpassowrd = user.passwordHash;
+      }
+
+      let newUser = {
+        name: req.body.name,
+        email: req.body.email,
+        phone: req.body.phone,
+        passwordHash: newpassowrd,
+        street: req.body.street,
+        apartment: req.body.apartment,
+        zip: req.body.zip,
+        country: req.body.country,
+        isAdmin: req.body.isAdmin,
+      };
+  
+      newUser = await User.findByIdAndUpdate(req.params.id, newUser, {
+        new: true
       });
 
-      if (!user) {
-        return res.status(500).json({ success: false });
-      }
-      return res.status(200).json({
-        user,
-        success: true,
-      });
+     return res.status(200).json({
+        user: newUser,
+        success: true
+      })
     }
     return res.status(500).json({ success: false, message: "Invalid Id." });
   } catch (error) {
     return res.status(500).json({ success: false, error });
   }
 });
+
 
 router.post(`/`, async (req, res) => {
   try {
@@ -93,5 +149,6 @@ router.post(`/`, async (req, res) => {
     });
   }
 });
+
 
 module.exports = router;
