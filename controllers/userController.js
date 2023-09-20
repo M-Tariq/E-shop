@@ -1,9 +1,7 @@
-const express = require("express");
 const bcryptjs = require("bcryptjs");
 const { User } = require("../models/user");
 const { default: mongoose } = require("mongoose");
 const jsonwebtoken = require("jsonwebtoken");
-const router = express.Router();
 
 module.exports.getUsers = async (req, res, next) => {
   try {
