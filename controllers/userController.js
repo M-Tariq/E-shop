@@ -57,7 +57,8 @@ module.exports.login = async (req, res) => {
     ) {
       const token = jsonwebtoken.sign(
         {
-          userId: user.id,
+          userId: user?.id,
+          isAdmin: user?.isAdmin,
         },
         process.env.SECRET_KEY,
         { expiresIn: "1d" }
@@ -65,7 +66,7 @@ module.exports.login = async (req, res) => {
       res.status(200).json({
         success: true,
         message: "Logged In successfully.",
-        email: user.email,
+        email: user?.email,
         token,
       });
     } else {

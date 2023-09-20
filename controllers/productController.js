@@ -31,12 +31,10 @@ module.exports.getProduct = async (req, res) => {
         message: "Product id is invalid.",
       });
     }
-    console.log("id", req?.params?.id);
 
     const product = await Product.findById(req.params.id).populate([
       "category",
     ]);
-    console.log("product:", product);
     if (!product) {
       res.status(500).json({
         success: false,
@@ -144,7 +142,6 @@ module.exports.deleteProduct = async (req, res) => {
 module.exports.getProductCount = async (req, res) => {
   try {
     const productsCount = await Product.countDocuments();
-    console.log(productsCount);
     if (!productsCount) {
       return res.status(404).json({
         success: false,

@@ -18,10 +18,11 @@ function authJwt() {
 }
 
 async function isRevoked(req, payload) {
-  if (!payload.isAdmin) {
-    return true;
+  const isAdmin = payload?.payload?.isAdmin;
+  if (!isAdmin) {
+    return true; // Token is revoked
   }
 
-  return false;
+  return false; // Token is not revoked
 }
 module.exports = authJwt;
