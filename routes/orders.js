@@ -1,34 +1,21 @@
-const { Order } = require('../models/order');
-const express = require('express');
+const { Order } = require("../models/order");
+const express = require("express");
 const router = express.Router();
+const orderController = require("../controllers/orderController");
+router.post(`/`, orderController.saveOrder);
 
-router.get(`/`, async (req, res) => {
-  const orderList = await Order.find();
+router.get(`/`, orderController.getOrders);
 
-  if (!orderList) {
-    res.status(500).json({ success: false })
-  }
-  res.status(200).json({
-    orderList,
-    success: true
-  });
-})
+router.get(`/:id`, orderController.getOrder);
 
-router.post(`/`, (req, res) => {
-  const newOrder = new Order({
-    name: req.body.name,
-    image: req.body.image,
-    countInStock: req.body.countInStock
-  })
+router.put(`/:id`, orderController.updateOrder);
 
-  newOrder.save().then((createdOrder => {
-    res.status(201).json(createdOrder)
-  })).catch((err) => {
-    res.status(500).json({
-      error: err,
-      success: false
-    })
-  })
-})
+router.delete(`/:id`, orderController.deleteOrder);
+
+router.get(`/get/total-sales`, orderController.getTotalSales);
+
+router.get(`/get/order-count`, orderController.getOrderCount);
+
+router.get(`/get/user-orders/:id`, orderController.getUserOrder);
 
 module.exports = router;
