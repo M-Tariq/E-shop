@@ -10,10 +10,7 @@ module.exports.getCategories = async (req, res) => {
         .status(404)
         .json({ success: false, message: "Categories not found!" });
     }
-    res.status(200).json({
-      categoryList,
-      success: true,
-    });
+    res.status(200).json(categoryList);
   } catch (error) {
     res.status(500).json({ success: false, message: "Categories not found!" });
   }
@@ -27,10 +24,7 @@ module.exports.getCategory = async (req, res) => {
     if (!category) {
       res.status(404).json({ success: false, message: "Category not found!" });
     }
-    res.status(200).json({
-      category,
-      success: true,
-    });
+    res.status(200).json(category);
   } catch (error) {
     res.status(500).json({ success: false, message: "Category not found!" });
   }

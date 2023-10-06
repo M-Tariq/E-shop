@@ -33,6 +33,7 @@ const productSchema = mongoose.Schema({
 
   price: {
     type: Number,
+    required: true,
   },
 
   category: {
@@ -71,4 +72,9 @@ const productSchema = mongoose.Schema({
 productSchema.virtual("id").get(function () {
   return this._id.toHexString();
 });
+
+productSchema.set("toJSN", {
+  virtuals: true,
+});
+
 exports.Product = mongoose.model("Product", productSchema);
