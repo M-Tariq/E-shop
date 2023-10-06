@@ -12,10 +12,7 @@ module.exports.getProducts = async (req, res) => {
     if (!productList) {
       return res.status(500).json({ success: false });
     }
-    res.status(200).json({
-      productList,
-      success: true,
-    });
+    res.status(200).json(productList);
   } catch (error) {
     return res
       .status(500)
@@ -41,10 +38,7 @@ module.exports.getProduct = async (req, res) => {
         message: "Product not found.",
       });
     }
-    res.status(200).json({
-      product,
-      success: true,
-    });
+    res.status(200).json(product);
   } catch (error) {
     res.status(404).json({
       success: false,
