@@ -55,9 +55,18 @@ module.exports.saveProduct = async (req, res) => {
       message: "Invalid category.",
     });
   }
+
+  if (!req.file) {
+    return res.status(400).json({
+      message: "No image in the request.",
+    });
+  }
+
+  const fileName = req.file.filename;
+  const basePath = `${req.protocol}://${req.get("host")}/public/products/`;
   let product = new Product({
     name: req.body.name,
-    image: req.body.image,
+    image: `${basePath}${fileName}`,
     images: req.body.images,
     countInStock: req.body.countInStock,
     description: req.body.description,
@@ -87,30 +96,35 @@ module.exports.saveProduct = async (req, res) => {
 
 module.exports.updateProduct = async (req, res) => {
   try {
-    if (!mongoose.isValidObjectId(req.params.id)) {
+    const productId = req.params.id;
+    if (!mongoose.isValidObjectId(productId)) {
       return res.status(404).json({
         success: false,
         message: "Product id is invalid.",
       });
     }
-    const product = await Product.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-    });
-    if (!product) {
-      return res.status(404).json({
-        success: false,
-        message: "Product not found.",
-      });
-    }
+
+    const product = await Product.findById(productId);
+
+    // Update the product fields with the ones sent by the user
+    // You can use Object.assign or spread operator for a more controlled update
+    // const updatedProduct = { ...product, ...updatedData };
+    Object.assign(product, req.body); // Replace with your preferred update method
+
+    console.log("product:", product);
+
+    // Save the updated product
+    const updatedProduct = await product.save();
+
     return res.status(200).json({
       success: true,
       message: "Product updated successfully.",
-      product,
+      product: updatedProduct,
     });
   } catch (error) {
     return res.status(404).json({
       success: false,
-      message: "Product not found.",
+      message: "An error occurred while updating the product.",
       error: error,
     });
   }

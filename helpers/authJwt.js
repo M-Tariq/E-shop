@@ -15,6 +15,7 @@ function authJwt() {
       // `${api}/users/register`,
 
       { url: /(.*)/ },
+      { url: /\/public\/products(.*)/, methods: ["GET", "OPTIONS"] },
     ],
   });
 }
