@@ -1,6 +1,44 @@
 const { Product } = require("../models/product");
 const { Category } = require("../models/category");
 const { default: mongoose } = require("mongoose");
+const path = require("path");
+
+const MAX_FILE_SIZE = 1024 * 1024; // 1 MB
+
+const multer = require("multer");
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "public/products");
+  },
+  filename: function (req, file, cb) {
+    const fileName = file.originalname.split(" ").join("-");
+    const fileNameWithoutExtension = path.basename(
+      fileName,
+      path.extname(fileName)
+    );
+    const fileExtension = path.extname(file.originalname);
+    cb(null, `${fileNameWithoutExtension}-${Date.now()}${fileExtension}`);
+  },
+});
+
+const imageFilter = (req, file, cb) => {
+  console.log(file);
+  if (file.mimetype.startsWith("image")) {
+    cb(null, true);
+  } else {
+    cb(new Error("Not an image! Only image file is allowed", 400), false);
+  }
+};
+
+const uploadOptions = multer({
+  storage: storage,
+  limits: { fileSize: MAX_FILE_SIZE },
+  fileFilter: imageFilter,
+});
+
+exports.uploadProductPhoto = uploadOptions.single("image");
+exports.uploadProductGalleryPhotos = uploadOptions.array("images", 3);
 
 module.exports.getProducts = async (req, res) => {
   try {
@@ -56,17 +94,17 @@ module.exports.saveProduct = async (req, res) => {
     });
   }
 
+  //image validation
   if (!req.file) {
     return res.status(400).json({
       message: "No image in the request.",
     });
   }
 
-  const fileName = req.file.filename;
-  const basePath = `${req.protocol}://${req.get("host")}/public/products/`;
+  const filename = `${req.protocol}://${req.get("host")}/${req.file.path}`;
   let product = new Product({
     name: req.body.name,
-    image: `${basePath}${fileName}`,
+    image: filename,
     images: req.body.images,
     countInStock: req.body.countInStock,
     description: req.body.description,
@@ -105,13 +143,20 @@ module.exports.updateProduct = async (req, res) => {
     }
 
     const product = await Product.findById(productId);
+    const file = req.file;
+    // console.log(file);
 
-    // Update the product fields with the ones sent by the user
-    // You can use Object.assign or spread operator for a more controlled update
-    // const updatedProduct = { ...product, ...updatedData };
-    Object.assign(product, req.body); // Replace with your preferred update method
+    // const updatedProduct = { ...product, ...req.body };
+    console.log("product_b:", product);
+    console.log("req.body:", req.body);
 
-    console.log("product:", product);
+    Object.assign(product, req.body);
+    // console.log("product_b2:", product);
+
+    if (file) {
+      filename = `${req.protocol}://${req.get("host")}/${req.file.path}`;
+      Object.assign(product, { image: filename });
+    }
 
     // Save the updated product
     const updatedProduct = await product.save();
@@ -122,6 +167,7 @@ module.exports.updateProduct = async (req, res) => {
       product: updatedProduct,
     });
   } catch (error) {
+    console.log(error);
     return res.status(404).json({
       success: false,
       message: "An error occurred while updating the product.",
@@ -162,7 +208,6 @@ module.exports.getProductCount = async (req, res) => {
       productsCount,
     });
   } catch (error) {
-    console.log(error);
     return res.status(404).json({
       success: false,
       message: "Product not found.",
@@ -193,11 +238,54 @@ module.exports.getFeaturedProduct = async (req, res) => {
       countFeaturedProduct,
     });
   } catch (error) {
-    console.log(error);
     return res.status(404).json({
       success: false,
       message: "Product not found.",
       error,
+    });
+  }
+};
+
+module.exports.updateGalleryImages = async (req, res) => {
+  try {
+    const productId = req.params.id;
+    if (!mongoose.isValidObjectId(productId)) {
+      return res.status(404).json({
+        success: false,
+        message: "Product id is invalid.",
+      });
+    }
+
+    let imagesPaths = [];
+    const files = req.files;
+    if (files) {
+      files.map((file) => {
+        let filename = `${req.protocol}://${req.get("host")}/${file.path}`;
+        imagesPaths.push(filename);
+      });
+    }
+
+    const product = await Product.findByIdAndUpdate(
+      productId,
+      {
+        images: imagesPaths,
+      },
+      { new: true }
+    );
+
+    if (!product) {
+      return res.status(500).send("Product can't be updated.");
+    }
+    return res.status(200).json({
+      success: true,
+      message: "Product updated successfully.",
+      product,
+    });
+  } catch (error) {
+    return res.status(404).json({
+      success: false,
+      message: "An error occurred while updating the product.",
+      error: error,
     });
   }
 };

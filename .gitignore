@@ -1,7 +1,7 @@
 # dependencies
 /node_modules
 /databse
-
+/public
 # testing
 /coverage
 # production

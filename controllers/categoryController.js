@@ -63,7 +63,7 @@ module.exports.saveCategory = (req, res) => {
       .save()
       .then((createdCategory) => {
         res.status(200).json({
-          catgory: createdCategory,
+          category: createdCategory,
           success: true,
         });
       })
