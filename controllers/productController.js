@@ -2,8 +2,8 @@ const { Product } = require("../models/product");
 const { Category } = require("../models/category");
 const { default: mongoose } = require("mongoose");
 const path = require("path");
-
-const MAX_FILE_SIZE = 1024 * 1024; // 1 MB
+require("dotenv/config");
+const MAX_FILE_SIZE = process.env.MAX_FILE_SIZE;
 
 const multer = require("multer");
 
@@ -37,7 +37,9 @@ const uploadOptions = multer({
   fileFilter: imageFilter,
 });
 
+// for single product image
 exports.uploadProductPhoto = uploadOptions.single("image");
+// for product gallery images
 exports.uploadProductGalleryPhotos = uploadOptions.array("images", 3);
 
 module.exports.getProducts = async (req, res) => {
@@ -144,14 +146,8 @@ module.exports.updateProduct = async (req, res) => {
 
     const product = await Product.findById(productId);
     const file = req.file;
-    // console.log(file);
-
-    // const updatedProduct = { ...product, ...req.body };
-    console.log("product_b:", product);
-    console.log("req.body:", req.body);
 
     Object.assign(product, req.body);
-    // console.log("product_b2:", product);
 
     if (file) {
       filename = `${req.protocol}://${req.get("host")}/${req.file.path}`;

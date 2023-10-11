@@ -33,11 +33,13 @@ app.use(`${api}/users`, usersRoutes);
 app.use(`${api}/orders`, ordersRoutes);
 
 //Database
+const CONNECTION_STRING = process.env.CONNECTION_STRING;
+const DB_NAME = process.env.DB_NAME;
 mongoose
-  .connect(process.env.CONNECTION_STRING, {
+  .connect(CONNECTION_STRING, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
-    dbName: "eshop_database",
+    dbName: process.env.DB_NAME,
   })
   .then(() => {
     console.log("Database Connection is ready...");
@@ -47,6 +49,7 @@ mongoose
   });
 
 //Server
-app.listen(3000, () => {
-  console.log("server is running http://localhost:3000");
+const PORT = process.env.PORT;
+app.listen(PORT, () => {
+  console.log(`server is running http://localhost:${PORT}`);
 });
