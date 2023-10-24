@@ -10,10 +10,7 @@ module.exports.getUsers = async (req, res, next) => {
     if (!users) {
       res.status(500).json({ success: false });
     }
-    res.status(200).json({
-      users,
-      success: true,
-    });
+    res.status(200).json(users);
   } catch (error) {
     res.status(500).json({ success: false, error });
   }
